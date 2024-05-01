@@ -10,7 +10,6 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Thay đổi các thông số sau thành thông tin của cơ sở dữ liệu MySQL của bạn
 host = 'localhost'
 database = 'ltdd'
 user = 'root'
@@ -45,7 +44,7 @@ def connect_db():
     return df
 def download_img():
     folder_path = "images"
-
+    df = connect_db()
     # Tạo thư mục nếu nó không tồn tại
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)

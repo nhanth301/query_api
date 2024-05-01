@@ -5,3 +5,5 @@ torch
 torchvision
 requests
 Flask
+nltk
+scikit-learn

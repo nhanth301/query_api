@@ -14,6 +14,7 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from main import cosine_similarity, load_vector_db, query
+from main2 import load_titles, queryText
 
 
 app = Flask(__name__)
@@ -24,8 +25,18 @@ def upload_file():
         file = request.files['file']
         if file:
             img = Image.open(BytesIO(file.read()))
-            return query(img,feature_tensors)
+            return query(img,feature_tensors,10)
     return render_template('upload.html')
+
+@app.route('/querytext', methods=['GET', 'POST'])
+def upload_text():
+    if request.method == 'POST':
+        text = request.form.get('text')
+        if text:
+            ids = queryText(text,titles,10)
+            # return [text for (idx,text) in titles if (idx in ids)]
+            return ids
+    return render_template('upload2.html')
 
 if __name__ == '__main__':
     vector_db_path = "vector_db.pkl"
@@ -34,4 +45,5 @@ if __name__ == '__main__':
     resnet18 = torch.nn.Sequential(*modules)
     resnet18.eval()
     feature_tensors = load_vector_db()
+    titles = load_titles()
     app.run(debug=True)
