@@ -7,7 +7,6 @@ import torchvision.transforms as transforms
 import torchvision.models as models
 from PIL import Image
 import pickle
-from torch.nn.functional import cosine_similarity
 import numpy as np
 import matplotlib.pyplot as plt
 

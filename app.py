@@ -13,38 +13,8 @@ from PIL import Image
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
+from main import cosine_similarity, load_vector_db, query
 
-
-def cosine_similarity(vector1, vector2):
-    """
-    Tính cosine similarity giữa hai vector.
-
-    Tham số:
-    vector1 (numpy array): Vector thứ nhất.
-    vector2 (numpy array): Vector thứ hai.
-
-    Trả về:
-    float: Giá trị cosine similarity giữa hai vector.
-    """
-    dot_product = np.dot(vector1, vector2)
-    norm_vector1 = np.linalg.norm(vector1)
-    norm_vector2 = np.linalg.norm(vector2)
-    similarity = dot_product / (norm_vector1 * norm_vector2)
-    return similarity
-def load_vector_db():
-    with open(vector_db_path, 'rb') as file:
-        feature_tensors = pickle.load(file)
-    return feature_tensors
-def query(image, feature_tensors, n=5):
-    transform = transforms.Compose([
-        transforms.Resize((86, 128)),
-        transforms.ToTensor(),
-    ])
-    img_tensor = transform(image.convert('RGB'))
-    feature = resnet18(img_tensor.unsqueeze(0)).squeeze().detach().numpy()
-    sims = [(int(id), cosine_similarity(feature, f)) for (id, f) in feature_tensors]
-    sorted_sims = sorted(sims, key=lambda x: x[1], reverse=True)
-    return [idx for (idx, sim) in sorted_sims[:n]]
 
 app = Flask(__name__)
 
