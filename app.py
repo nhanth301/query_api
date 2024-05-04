@@ -1,16 +1,12 @@
 from flask import Flask, request, render_template, Response
 from PIL import Image
 from io import BytesIO
-import pickle
-import mysql.connector
 import pandas as pd
-import requests
 import os
 import torch
 import torchvision.transforms as transforms
 import torchvision.models as models
 from PIL import Image
-import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from main import cosine_similarity, load_vector_db, query
@@ -23,17 +19,26 @@ app = Flask(__name__)
 def upload_file():
     if request.method == 'POST':
         file = request.files['file']
+        try:
+            n = int(request.form.get('n'))
+        except:
+            n = 10
+
         if file:
             img = Image.open(BytesIO(file.read()))
-            return query(img,feature_tensors,10)
+            return query(img,feature_tensors,n)
     return render_template('upload.html')
 
 @app.route('/querytext', methods=['GET', 'POST'])
 def upload_text():
     if request.method == 'POST':
         text = request.form.get('text')
+        try:
+            n = int(request.form.get('n'))
+        except:
+            n = 10
         if text:
-            ids = queryText(text,titles,10)
+            ids = queryText(text,titles,n)
             # return [text for (idx,text) in titles if (idx in ids)]
             return ids
     return render_template('upload2.html')
