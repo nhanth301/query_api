@@ -9,8 +9,8 @@ import torchvision.models as models
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
-from main import cosine_similarity, load_vector_db, query
-from main2 import load_titles, queryText
+from main import load_vector_db, query
+from main2 import queryText, load_embedd
 
 
 app = Flask(__name__)
@@ -22,8 +22,7 @@ def upload_file():
         try:
             n = int(request.form.get('n'))
         except:
-            n = 10
-
+            n = 9
         if file:
             img = Image.open(BytesIO(file.read()))
             return query(img,feature_tensors,n)
@@ -36,10 +35,9 @@ def upload_text():
         try:
             n = int(request.form.get('n'))
         except:
-            n = 10
+            n = 9
         if text:
-            ids = queryText(text,titles,n)
-            # return [text for (idx,text) in titles if (idx in ids)]
+            ids = queryText(text,embeddings,n)
             return ids
     return render_template('upload2.html')
 
@@ -50,5 +48,5 @@ if __name__ == '__main__':
     resnet18 = torch.nn.Sequential(*modules)
     resnet18.eval()
     feature_tensors = load_vector_db()
-    titles = load_titles()
+    embeddings = load_embedd()
     app.run(debug=True)
