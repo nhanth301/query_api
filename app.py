@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, Response
+from flask import Flask, request, render_template, Response, jsonify
 from PIL import Image
 from io import BytesIO
 import pandas as pd
@@ -9,8 +9,13 @@ import torchvision.models as models
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
-from main import load_vector_db, query
-from main2 import queryText, load_embedd
+import json
+from main3 import load_vector_db, query, img_embedding
+from main2 import queryText, load_embedd, load_titles, text_embedding
+from transformers import ViTImageProcessor, ViTModel
+from main import print_res
+from sentence_transformers import SentenceTransformer
+from pyvi.ViTokenizer import tokenize
 
 
 app = Flask(__name__)
@@ -24,8 +29,11 @@ def upload_file():
         except:
             n = 9
         if file:
-            img = Image.open(BytesIO(file.read()))
-            return query(img,feature_tensors,n)
+            img = Image.open(BytesIO(file.read())).convert("RGB")
+            input = processor(images=img, return_tensors="pt")
+            output = model(**input)
+            # print_res(query(output.pooler_output.detach().numpy().reshape(-1),feature_tensors,n))
+            return jsonify({"ids":query(output.pooler_output.detach().numpy().reshape(-1),feature_tensors,n)})
     return render_template('upload.html')
 
 @app.route('/querytext', methods=['GET', 'POST'])
@@ -37,16 +45,15 @@ def upload_text():
         except:
             n = 9
         if text:
-            ids = queryText(text,embeddings,n)
-            return ids
+            model = SentenceTransformer('dangvantuan/vietnamese-embedding')
+            embeded_text = model.encode(tokenize(text))
+            ids = queryText(embeded_text,embeddings,n)
+            return jsonify({"ids":ids})
     return render_template('upload2.html')
 
 if __name__ == '__main__':
-    vector_db_path = "vector_db.pkl"
-    resnet18 = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
-    modules = list(resnet18.children())[:-1]
-    resnet18 = torch.nn.Sequential(*modules)
-    resnet18.eval()
+    processor = ViTImageProcessor.from_pretrained('google/vit-base-patch16-224-in21k')
+    model = ViTModel.from_pretrained('google/vit-base-patch16-224-in21k')
     feature_tensors = load_vector_db()
     embeddings = load_embedd()
     app.run(debug=True)

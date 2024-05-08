@@ -8,15 +8,13 @@ def load_titles():
     df = connect_db()
     return [(row['id'],row['title']) for i,row in df.iterrows()]
 
-def embedding(titles):
+def text_embedding(titles):
     model = SentenceTransformer('dangvantuan/vietnamese-embedding')
     embeddings = [(i,model.encode(tokenize(title))) for i,title in titles]
     with open('embeddings.pkl', 'wb') as file:
         pickle.dump(embeddings, file)
 
-def queryText(text, embeddings, n = 5):
-    model = SentenceTransformer('dangvantuan/vietnamese-embedding')
-    embeded_text = model.encode(tokenize(text))
+def queryText(embeded_text, embeddings, n = 5):
     scores = [(i,cosine_similarity(embeded_text,embed)) for i,embed in embeddings]
     sorted_score = sorted(scores, key=lambda x: x[1], reverse=True)
     return [i for (i,score) in sorted_score[:n] if score > 0]

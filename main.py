@@ -10,6 +10,7 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 host = 'localhost'
 database = 'ltdd'
 user = 'root'
