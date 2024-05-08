@@ -31,7 +31,7 @@ def upload_file():
         if file:
             img = Image.open(BytesIO(file.read())).convert("RGB")
             input = processor(images=img, return_tensors="pt")
-            output = model(**input)
+            output = img_model(**input)
             # print_res(query(output.pooler_output.detach().numpy().reshape(-1),feature_tensors,n))
             return jsonify({"ids":query(output.pooler_output.detach().numpy().reshape(-1),feature_tensors,n)})
     return render_template('upload.html')
@@ -45,15 +45,15 @@ def upload_text():
         except:
             n = 9
         if text:
-            model = SentenceTransformer('dangvantuan/vietnamese-embedding')
-            embeded_text = model.encode(tokenize(text))
+            embeded_text = text_model.encode(tokenize(text))
             ids = queryText(embeded_text,embeddings,n)
             return jsonify({"ids":ids})
     return render_template('upload2.html')
 
 if __name__ == '__main__':
     processor = ViTImageProcessor.from_pretrained('google/vit-base-patch16-224-in21k')
-    model = ViTModel.from_pretrained('google/vit-base-patch16-224-in21k')
+    img_model = ViTModel.from_pretrained('google/vit-base-patch16-224-in21k')
+    text_model = SentenceTransformer('dangvantuan/vietnamese-embedding')
     feature_tensors = load_vector_db()
     embeddings = load_embedd()
     app.run(debug=True)
