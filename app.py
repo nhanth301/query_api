@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template, Response, jsonify
 from PIL import Image
 from io import BytesIO
+import base64
 import pandas as pd
 import os
 import torch
@@ -23,25 +24,25 @@ app = Flask(__name__)
 @app.route('/queryimg', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
-        file = request.files['file']
+        base64_img = request.json["img"]
+        img_data = base64.b64decode(base64_img)
         try:
-            n = int(request.form.get('n'))
+            n = int(request.json["n"])
         except:
             n = 9
-        if file:
-            img = Image.open(BytesIO(file.read())).convert("RGB")
-            input = processor(images=img, return_tensors="pt")
-            output = img_model(**input)
-            # print_res(query(output.pooler_output.detach().numpy().reshape(-1),feature_tensors,n))
-            return jsonify({"ids":query(output.pooler_output.detach().numpy().reshape(-1),feature_tensors,n)})
+        img = img = Image.open(BytesIO(img_data)).convert("RGB")
+        input = processor(images=img, return_tensors="pt")
+        output = img_model(**input)
+        # print_res(query(output.pooler_output.detach().numpy().reshape(-1),feature_tensors,n))
+        return jsonify({"ids":query(output.pooler_output.detach().numpy().reshape(-1),feature_tensors,n)})
     return render_template('upload.html')
 
 @app.route('/querytext', methods=['GET', 'POST'])
 def upload_text():
     if request.method == 'POST':
-        text = request.form.get('text')
+        text = request.json["text"]
         try:
-            n = int(request.form.get('n'))
+            n = int(request.json["n"])
         except:
             n = 9
         if text:
