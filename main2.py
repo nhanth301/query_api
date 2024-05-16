@@ -28,6 +28,7 @@ def queryTextJC(text, titles, n):
     sorted_score =  sorted(scores, key=lambda x: x[1], reverse=True)
     return [i for (i,score) in sorted_score[:n]]
 
+
 def load_embedd():
     with open('embeddings.pkl', 'rb') as file:
         embedd = pickle.load(file)

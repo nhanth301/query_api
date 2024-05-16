@@ -17,6 +17,7 @@ from transformers import ViTImageProcessor, ViTModel
 from main import print_res
 from sentence_transformers import SentenceTransformer
 from pyvi.ViTokenizer import tokenize
+from transformers import RobertaForSequenceClassification, AutoTokenizer
 
 
 app = Flask(__name__)
@@ -61,12 +62,25 @@ def upload_text2():
         if text:
             ids = queryTextJC(text, titles, n)
             return jsonify({"ids":ids})
+        
+@app.route('/sentimentStatus', methods=['POST'])
+def isPos():
+    if request.method == 'POST':
+        text = request.json["text"]
+        input_ids = torch.tensor([tokenizer.encode(text)])
+        with torch.no_grad():
+            out = sentiment_model(input_ids)
+            idx = np.array(out.logits.softmax(dim=-1).tolist()).reshape(-1).argmax()
+        return jsonify({"result" : str(idx)})  
+
 
 
 if __name__ == '__main__':
     processor = ViTImageProcessor.from_pretrained('google/vit-base-patch16-224-in21k')
     img_model = ViTModel.from_pretrained('google/vit-base-patch16-224-in21k')
     text_model = SentenceTransformer('dangvantuan/vietnamese-embedding')
+    sentiment_model = RobertaForSequenceClassification.from_pretrained("wonrax/phobert-base-vietnamese-sentiment")
+    tokenizer = AutoTokenizer.from_pretrained("wonrax/phobert-base-vietnamese-sentiment", use_fast=False)
     titles = load_titles()
     feature_tensors = load_vector_db()
     embeddings = load_embedd()
